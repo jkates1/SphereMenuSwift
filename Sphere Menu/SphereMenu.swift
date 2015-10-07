@@ -15,7 +15,7 @@ protocol SphereMenuDelegate{
 
 class SphereMenu:UIView, UICollisionBehaviorDelegate{
     
-
+    
     let kItemInitTag:Int = 1001
     let kAngleOffset:CGFloat = CGFloat(M_PI_2) / 2.0
     let kSphereLength:CGFloat = 80
@@ -58,7 +58,7 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
         self.expanded = false
         self.tapToDismiss = tapToDismiss
         self.dismissTap = UITapGestureRecognizer(target: self, action: "hide")
-
+        
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -90,28 +90,28 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
         self.items = Array()
         self.positions = Array()
         self.snaps = Array()
-
+        
         // setup the items
         for (var i = 0; i < self.count; i++) {
             var item = UIImageView(image: self.images![i])
             item.tag = kItemInitTag + i;
             item.userInteractionEnabled = true;
             self.superview?.addSubview(item)
-    
+            
             let position = self.centerForSphereAtIndex(i)
             item.center = self.center;
             self.positions?.append(NSValue(CGPoint: position))
-    
+            
             let tap = UITapGestureRecognizer(target: self, action:"tapped:")
             item.addGestureRecognizer(tap)
-    
+            
             let pan = UIPanGestureRecognizer(target: self, action: "panned:")
             item.addGestureRecognizer(pan)
             self.items?.append(item)
         }
-    
+        
         self.superview?.bringSubviewToFront(self)
-    
+        
         // setup animator and behavior
         self.animator = UIDynamicAnimator(referenceView: self.superview!)
         self.collision = UICollisionBehavior(items: self.items!)
@@ -123,7 +123,7 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
             snap.damping = CGFloat(kSphereDamping)
             self.snaps?.append(snap)
         }
-    
+        
         self.itemBehavior = UIDynamicItemBehavior(items: self.items!)
         self.itemBehavior?.allowsRotation = false;
         self.itemBehavior?.elasticity = 0.25;
@@ -133,7 +133,7 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
         self.itemBehavior?.elasticity = 0.8;
         self.itemBehavior?.friction = 0.5;
     }
-
+    
     func centerForSphereAtIndex(index:Int) -> CGPoint{
         let firstAngle:CGFloat = CGFloat(M_PI) + (CGFloat(M_PI_2) - kAngleOffset) + CGFloat(index) * kAngleOffset
         let startPoint = self.center
@@ -144,8 +144,8 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
     }
     
     func startTapped(gesture:UITapGestureRecognizer){
-        self.animator?.removeBehavior(self.collision)
-        self.animator?.removeBehavior(self.itemBehavior)
+        self.animator?.removeBehavior(self.collision!)
+        self.animator?.removeBehavior(self.itemBehavior!)
         self.removeSnapBehaviors()
         
         if (self.expanded == true) {
@@ -154,7 +154,7 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
             self.expandSubmenu()
         }
     }
-
+    
     func tapped(gesture:UITapGestureRecognizer)
     {
         var tag = gesture.view?.tag
@@ -162,25 +162,25 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
         self.delegate?.sphereDidSelected(tag!)
         self.shrinkSubmenu()
     }
-
+    
     func panned(gesture:UIPanGestureRecognizer)
     {
         var touchedView = gesture.view;
         if (gesture.state == UIGestureRecognizerState.Began) {
-            self.animator?.removeBehavior(self.itemBehavior)
-            self.animator?.removeBehavior(self.collision)
+            self.animator?.removeBehavior(self.itemBehavior!)
+            self.animator?.removeBehavior(self.collision!)
             self.removeSnapBehaviors()
         } else if (gesture.state == UIGestureRecognizerState.Changed) {
             touchedView?.center = gesture.locationInView(self.superview)
         } else if (gesture.state == UIGestureRecognizerState.Ended) {
             self.bumper = touchedView;
-            self.animator?.addBehavior(self.collision)
+            self.animator?.addBehavior(self.collision!)
             let index = self.indexOfItemInArray(self.items!, item: touchedView!)
-
+            
             if (index >= 0) {
                 self.snapToPostionsWithIndex(index)
             }
-
+            
         }
     }
     
@@ -196,10 +196,10 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
     }
     
     func shrinkSubmenu(){
-        self.animator?.removeBehavior(self.collision)
+        self.animator?.removeBehavior(self.collision!)
         
         for (var i = 0; i < self.count; i++) {
-           self.snapToStartWithIndex(i)
+            self.snapToStartWithIndex(i)
         }
         self.expanded = false;
         self.superview?.removeGestureRecognizer(self.dismissTap!)
@@ -207,7 +207,7 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
     
     func expandSubmenu(){
         for (var i = 0; i < self.count; i++) {
-           self.snapToPostionsWithIndex(i)
+            self.snapToPostionsWithIndex(i)
         }
         self.expanded = true;
         self.superview?.addGestureRecognizer(self.dismissTap!)
@@ -226,7 +226,7 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
     func snapToPostionsWithIndex(index:Int)
     {
         let positionValue:AnyObject = self.positions![index];
-        let position = positionValue.CGPointValue()
+        let position = positionValue.CGPointValue
         let snap = UISnapBehavior(item: self.items![index], snapToPoint: position)
         snap.damping = CGFloat(kSphereDamping)
         let snapToRemove = self.snaps![index];
@@ -234,18 +234,18 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
         self.animator?.removeBehavior(snapToRemove)
         self.animator?.addBehavior(snap)
     }
-
+    
     func removeSnapBehaviors()
     {
         for (var i = 0; i < self.snaps?.count; i++){
-            self.animator?.removeBehavior(self.snaps?[i])
+            self.animator?.removeBehavior((self.snaps?[i])!)
         }
     }
     
     func collisionBehavior(behavior: UICollisionBehavior, endedContactForItem item1: UIDynamicItem, withItem item2: UIDynamicItem) {
-      //  return;
-       self.animator?.addBehavior(self.itemBehavior)
-
+        //  return;
+        self.animator?.addBehavior(self.itemBehavior!)
+        
         if (item1 !== self.bumper){
             let index = self.indexOfItemInArray(self.items!, item: item1)
             if (index >= 0) {
@@ -260,6 +260,5 @@ class SphereMenu:UIView, UICollisionBehaviorDelegate{
             }
         }
     }
-
+    
 }
-
